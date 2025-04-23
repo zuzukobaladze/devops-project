@@ -15,4 +15,4 @@ echo "Starting status dashboard..."
 # Store the PID
 echo $! > "$PROJECT_ROOT/dashboard.pid"
 echo "Dashboard started with PID $(cat "$PROJECT_ROOT/dashboard.pid")"
-echo "Visit http://localhost:8080 to view the dashboard" 
+echo "Visit http://localhost:7070 to view the dashboard" 

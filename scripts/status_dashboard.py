@@ -15,111 +15,65 @@ import urllib.request
 PROJECT_ROOT = Path(os.path.dirname(os.path.abspath(__file__))).parent
 
 # Configuration
-PORT = 8080
+PORT = 7070
 LOG_FILE = PROJECT_ROOT / "logs" / "health_checks.log"
-APP_URL = "http://localhost:5000/health"
+APP_URL = "http://localhost:3000/health"
 CHECK_INTERVAL = 30  # seconds
 
 # Ensure log directory exists
 os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
 
-# HTML template for the dashboard
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>DevOps Pipeline Status Dashboard</title>
-    <meta http-equiv="refresh" content="30">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        .status {
-            margin: 20px 0;
-            padding: 15px;
-            border-radius: 4px;
-        }
-        .healthy {
-            background-color: #d5f5e3;
-            border-left: 5px solid #2ecc71;
-        }
-        .unhealthy {
-            background-color: #f5d5d5;
-            border-left: 5px solid #e74c3c;
-        }
-        .unknown {
-            background-color: #fdebd0;
-            border-left: 5px solid #f39c12;
-        }
-        .section {
-            margin-top: 30px;
-        }
-        .log {
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 4px;
-            height: 300px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        .timestamp {
-            color: #7f8c8d;
-            font-size: 0.8em;
-        }
-        .refresh {
-            text-align: right;
-            color: #7f8c8d;
-            font-size: 0.8em;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>DevOps Pipeline Status Dashboard</h1>
-        <div class="refresh">Auto-refreshes every 30 seconds. Last updated: {timestamp}</div>
-        
-        <div class="section">
-            <h2>Application Status</h2>
-            <div class="status {status_class}">
-                <strong>Status:</strong> {status}
-                <br>
-                <span class="timestamp">Last checked: {health_timestamp}</span>
+# Simplified dashboard HTML
+def get_html_template(timestamp, status, status_class, health_timestamp, version, deploy_time, health_logs):
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>DevOps Pipeline Status Dashboard</title>
+        <meta http-equiv="refresh" content="30">
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }}
+            .container {{ max-width: 900px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }}
+            h1 {{ color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }}
+            .status {{ margin: 20px 0; padding: 15px; border-radius: 4px; }}
+            .healthy {{ background-color: #d5f5e3; border-left: 5px solid #2ecc71; }}
+            .unhealthy {{ background-color: #f5d5d5; border-left: 5px solid #e74c3c; }}
+            .unknown {{ background-color: #fdebd0; border-left: 5px solid #f39c12; }}
+            .section {{ margin-top: 30px; }}
+            .log {{ background-color: #f9f9f9; padding: 10px; border-radius: 4px; height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }}
+            .timestamp {{ color: #7f8c8d; font-size: 0.8em; }}
+            .refresh {{ text-align: right; color: #7f8c8d; font-size: 0.8em; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>DevOps Pipeline Status Dashboard</h1>
+            <div class="refresh">Auto-refreshes every 30 seconds. Last updated: {timestamp}</div>
+            
+            <div class="section">
+                <h2>Application Status</h2>
+                <div class="status {status_class}">
+                    <strong>Status:</strong> {status}<br>
+                    <span class="timestamp">Last checked: {health_timestamp}</span>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Deployment Information</h2>
+                <p><strong>Current Version:</strong> {version}</p>
+                <p><strong>Deployment Time:</strong> {deploy_time}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Recent Health Checks</h2>
+                <div class="log">
+                    {health_logs}
+                </div>
             </div>
         </div>
-        
-        <div class="section">
-            <h2>Deployment Information</h2>
-            <p><strong>Current Version:</strong> {version}</p>
-            <p><strong>Deployment Time:</strong> {deploy_time}</p>
-        </div>
-        
-        <div class="section">
-            <h2>Recent Health Checks</h2>
-            <div class="log">
-                {health_logs}
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-"""
+    </body>
+    </html>
+    """
 
 class StatusHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
@@ -148,8 +102,8 @@ class StatusHandler(http.server.SimpleHTTPRequestHandler):
         # Format logs for HTML
         formatted_logs = "<br>".join(logs)
         
-        # Create HTML response
-        html = HTML_TEMPLATE.format(
+        # Create HTML response using function instead of template string
+        html = get_html_template(
             timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             status=app_status['status'],
             status_class=status_class,
