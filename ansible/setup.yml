@@ -1,0 +1,46 @@
+---
+- name: Setup Flask Application Environment
+  hosts: local
+  become: false
+
+  vars:
+    project_root: "{{ playbook_dir }}/.."
+    app_dir: "{{ project_root }}/app"
+    prod_dir: "{{ project_root }}/production"
+    staging_dir: "{{ project_root }}/staging"
+
+  tasks:
+    - name: Ensure Python is installed
+      command: python3 --version
+      register: python_version
+      ignore_errors: true
+      changed_when: false
+
+    - name: Display Python version
+      debug:
+        msg: "Python version is {{ python_version.stdout }}"
+      when: python_version.rc == 0
+
+    - name: Create project directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - "{{ app_dir }}"
+        - "{{ prod_dir }}"
+        - "{{ staging_dir }}"
+        - "{{ app_dir }}/templates"
+        - "{{ project_root }}/logs"
+
+    - name: Install Python dependencies
+      pip:
+        requirements: "{{ app_dir }}/requirements.txt"
+        executable: pip3
+      when: python_version.rc == 0
+
+    - name: Create a log file for health checks
+      file:
+        path: "{{ project_root }}/logs/health_checks.log"
+        state: touch
+        mode: "0644"

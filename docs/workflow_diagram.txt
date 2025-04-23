@@ -1,0 +1,33 @@
++---------------------+     +----------------------+     +---------------------+
+|                     |     |                      |     |                     |
+|  Developer          |     |  Version Control     |     |  CI/CD Pipeline     |
+|  Workstation        +---->+  (Git/GitHub)        +---->+  (GitHub Actions)   |
+|                     |     |                      |     |                     |
++---------------------+     +----------------------+     +---------+-----------+
+                                                                   |
+                                                                   |
+                                                                   v
++---------------------+     +----------------------+     +---------------------+
+|                     |     |                      |     |                     |
+|  Health Check       |     |  Production          |     |  Staging            |
+|  & Monitoring       |<----+  Environment         |<----+  Environment        |
+|                     |     |                      |     |                     |
++---------------------+     +----------------------+     +---------------------+
+        ^                             ^
+        |                             |
+        |                             |
+        |     +----------------------+|
+        |     |                      ||
+        +-----+  IaC                 ||
+              |  (Terraform/Ansible) |+
+              |                      |
+              +----------------------+
+
+[This ASCII diagram represents the workflow of the DevOps pipeline:
+1. Developer writes code on their workstation
+2. Code is pushed to Git/GitHub
+3. CI/CD Pipeline (GitHub Actions) runs tests
+4. Code is deployed to Staging for verification
+5. If tests pass, code moves to Production
+6. Health Check & Monitoring ensures everything works
+7. IaC (Terraform/Ansible) manages both environments] 

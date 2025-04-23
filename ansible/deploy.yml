@@ -1,0 +1,74 @@
+---
+- name: Deploy Flask Application
+  hosts: local
+  become: false
+
+  vars:
+    project_root: "{{ playbook_dir }}/.."
+    app_dir: "{{ project_root }}/app"
+    prod_dir: "{{ project_root }}/production"
+    staging_dir: "{{ project_root }}/staging"
+    active_symlink: "{{ project_root }}/active"
+    backup_dir: "{{ project_root }}/backup"
+    deployment_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
+
+  tasks:
+    - name: Create backup directory
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Backup current production if it exists
+      command: cp -r {{ prod_dir }} {{ backup_dir }}/backup_{{ deployment_timestamp }}
+      args:
+        creates: "{{ backup_dir }}/backup_{{ deployment_timestamp }}"
+      ignore_errors: true
+
+    - name: Clear staging directory
+      file:
+        path: "{{ staging_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Copy application files to staging
+      synchronize:
+        src: "{{ app_dir }}/"
+        dest: "{{ staging_dir }}/"
+
+    - name: Test application in staging
+      command: python3 -m pytest
+      args:
+        chdir: "{{ staging_dir }}"
+      register: test_result
+      ignore_errors: true
+
+    - name: Fail if tests failed
+      fail:
+        msg: "Tests failed in staging. Deployment aborted."
+      when: test_result.rc != 0
+
+    - name: Clear production directory
+      file:
+        path: "{{ prod_dir }}"
+        state: directory
+        mode: "0755"
+      when: test_result.rc == 0
+
+    - name: Deploy to production (Blue-Green Deployment)
+      synchronize:
+        src: "{{ staging_dir }}/"
+        dest: "{{ prod_dir }}/"
+      when: test_result.rc == 0
+
+    - name: Update active symlink to point to production
+      file:
+        src: "{{ prod_dir }}"
+        dest: "{{ active_symlink }}"
+        state: link
+      when: test_result.rc == 0
+
+    - name: Deployment complete
+      debug:
+        msg: "Successfully deployed to production"
+      when: test_result.rc == 0

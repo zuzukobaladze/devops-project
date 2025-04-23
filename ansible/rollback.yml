@@ -1,0 +1,58 @@
+---
+- name: Rollback Flask Application
+  hosts: local
+  become: false
+
+  vars:
+    project_root: "{{ playbook_dir }}/.."
+    prod_dir: "{{ project_root }}/production"
+    backup_dir: "{{ project_root }}/backup"
+    active_symlink: "{{ project_root }}/active"
+
+  tasks:
+    - name: Find available backups
+      find:
+        paths: "{{ backup_dir }}"
+        patterns: "backup_*"
+        file_type: directory
+      register: backup_versions
+
+    - name: Display available backups
+      debug:
+        msg: "Available backups: {{ item.path | basename }}"
+      with_items: "{{ backup_versions.files }}"
+      when: backup_versions.files | length > 0
+
+    - name: No backups available
+      debug:
+        msg: "No backups available for rollback"
+      when: backup_versions.files | length == 0
+
+    - name: Get the latest backup
+      set_fact:
+        latest_backup: "{{ backup_versions.files | sort(attribute='mtime',reverse=true) | first }}"
+      when: backup_versions.files | length > 0
+
+    - name: Rollback to the latest backup
+      block:
+        - name: Clear production directory
+          file:
+            path: "{{ prod_dir }}"
+            state: directory
+            mode: "0755"
+
+        - name: Copy latest backup to production
+          synchronize:
+            src: "{{ latest_backup.path }}/"
+            dest: "{{ prod_dir }}/"
+
+        - name: Update active symlink to point to rolled back production
+          file:
+            src: "{{ prod_dir }}"
+            dest: "{{ active_symlink }}"
+            state: link
+
+        - name: Rollback complete
+          debug:
+            msg: "Successfully rolled back to {{ latest_backup.path | basename }}"
+      when: backup_versions.files | length > 0
