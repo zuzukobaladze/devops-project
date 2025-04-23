@@ -92,17 +92,17 @@ echo "Setup complete! Here's how to use the application:"
 echo "=========================================================="
 echo
 echo "1. Start the application:"
-echo "   ./scripts/start_app.sh"
+echo "   cd active && python app.py"
 echo
 echo "2. Start the status dashboard:"
-echo "   ./scripts/start_dashboard.sh"
+echo "   cd scripts && python status_dashboard.py"
 echo
 echo "3. Set up health check monitoring:"
 echo "   ./scripts/setup_cron.sh"
 echo
-echo "4. Access the web application at http://localhost:5000"
+echo "4. Access the web application at http://localhost:3000"
 echo
-echo "5. View the status dashboard at http://localhost:8080"
+echo "5. View the status dashboard at http://localhost:7070"
 echo
 echo "6. To manually trigger a rollback:"
 echo "   cd ansible && ansible-playbook -i inventory.ini rollback.yml"

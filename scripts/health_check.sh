@@ -4,7 +4,7 @@
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_FILE="$PROJECT_ROOT/logs/health_checks.log"
-APP_URL="http://localhost:5000/health"
+APP_URL="http://localhost:3000/health"
 TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
 # Ensure log directory exists

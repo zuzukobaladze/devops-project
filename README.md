@@ -74,7 +74,7 @@ Health monitoring includes:
 
 ### 7. Status Dashboard
 
-A web-based dashboard (`http://localhost:8080`) that shows:
+A web-based dashboard (`http://localhost:7070`) that shows:
 - Current application status
 - Deployment information
 - Recent health check logs
@@ -117,23 +117,25 @@ A web-based dashboard (`http://localhost:8080`) that shows:
 
 5. Start the application:
    ```
-   ../scripts/start_app.sh
+   cd ..
+   python active/app.py
    ```
 
 6. Start the status dashboard:
    ```
-   ../scripts/start_dashboard.sh
+   cd scripts
+   python status_dashboard.py
    ```
 
 7. Set up health check monitoring:
    ```
-   ../scripts/setup_cron.sh
+   ./scripts/setup_cron.sh
    ```
 
 ### Usage
 
-- Access the web application at `http://localhost:5000`
-- View the status dashboard at `http://localhost:8080`
+- Access the web application at `http://localhost:3000`
+- View the status dashboard at `http://localhost:7070`
 - Health checks run automatically every 5 minutes
 - To manually trigger a rollback: `cd ansible && ansible-playbook -i inventory.ini rollback.yml`
 
@@ -205,15 +207,11 @@ This approach allows for reliable, repeatable deployments and environment setups
 
 The following screenshots demonstrate the implementation and functionality of various components:
 
-1. **Web Application**: The Flask application with form functionality running on localhost
+1. **Web Application**: The Flask application with form functionality running on localhost:3000
 2. **CI Pipeline**: GitHub Actions CI running tests on push to main/dev branch
 3. **Deployment Process**: Successful deployment using Ansible with Blue-Green strategy
-4. **Status Dashboard**: The health monitoring dashboard showing application status
+4. **Status Dashboard**: The health monitoring dashboard showing application status on port 7070
 5. **Health Checks**: Log output showing successful health checks and monitoring
 6. **Passing Tests**: Test results showing all tests passing
 
 These screenshots are included in the PDF report accompanying this project.
-
-## License
-
-This project is released under the MIT License. 
