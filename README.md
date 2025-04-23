@@ -93,8 +93,8 @@ A web-based dashboard (`http://localhost:8080`) that shows:
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
-   cd devops-mid
+   git clone https://github.com/zuzukobaladze/devops-project.git
+   cd devops-project
    ```
 
 2. Initialize the environment with Terraform:
@@ -201,19 +201,18 @@ devops-mid/
 
 This approach allows for reliable, repeatable deployments and environment setups.
 
-## Screenshots
+## Implementation Screenshots and Verification
 
-### Web Application
-![Web Application](docs/app_screenshot.png)
+The following screenshots demonstrate the implementation and functionality of various components:
 
-### CI Pipeline
-![CI Pipeline](docs/ci_screenshot.png)
+1. **Web Application**: The Flask application with form functionality running on localhost
+2. **CI Pipeline**: GitHub Actions CI running tests on push to main/dev branch
+3. **Deployment Process**: Successful deployment using Ansible with Blue-Green strategy
+4. **Status Dashboard**: The health monitoring dashboard showing application status
+5. **Health Checks**: Log output showing successful health checks and monitoring
+6. **Passing Tests**: Test results showing all tests passing
 
-### Deployment Process
-![Deployment Process](docs/deployment_screenshot.png)
-
-### Status Dashboard
-![Status Dashboard](docs/dashboard_screenshot.png)
+These screenshots are included in the PDF report accompanying this project.
 
 ## License
 
