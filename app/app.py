@@ -9,6 +9,8 @@ def index():
     return render_template('index.html')
 
 # some changes
+# some changes
+
 @app.route('/submit', methods=['POST'])
 def submit():
     name = request.form.get('name', 'Anonymous')
